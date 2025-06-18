@@ -13,10 +13,11 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            steps {
-                git 'https://github.com/bharatdappili/tic-tac-toe-java.git'
-            }
-        }
+    steps {
+        git branch: 'main', url: 'https://github.com/bharatdappili/tic-tac-toe-java.git'
+    }
+}
+
 
         stage('Build') {
             steps {
