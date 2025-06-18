@@ -2,29 +2,33 @@ pipeline {
     agent any
 
     tools {
-        jdk 'jdk21'
+        jdk 'Java 21'        // Make sure Java 21 JDK is configured in Jenkins Global Tool Configuration with this name
+        maven 'Maven 3.8.1'  // Same for Maven
     }
 
     environment {
-        SONAR_SCANNER_OPTS = "-Xmx512m"
+        SONAR_PROJECT_KEY = 'tic-tac-toe-java'
     }
 
     stages {
-
-        stage('Compile & Run') {
+        stage('Checkout') {
             steps {
-                script {
-                    env.JAVA_HOME = tool name: 'jdk21', type: 'hudson.model.JDK'
-                }
+                git url: 'https://github.com/bharatdappili/tic-tac-toe-java.git', branch: 'main'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                // Compile the TicTacToe.java file
+                sh 'javac TicTacToe.java'
+            }
+        }
+
+        stage('Run with simulated input') {
+            steps {
+                // Run the program with predefined input piped into it
                 sh '''
-                    export JAVA_HOME=${JAVA_HOME}
-                    export PATH=$JAVA_HOME/bin:$PATH
-
-                    echo "Compiling Java code..."
-                    javac TicTacToe.java
-
-                    echo "Running Java program..."
-                    java TicTacToe
+                echo -e "0\n0\n1\n0\n2\n0\n0\n1\n1\n1\n2\n1\n" | java TicTacToe
                 '''
             }
         }
@@ -32,14 +36,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('MySonarServer') {
-                    script {
-                        def scannerHome = tool 'SonarScanner'
-                        sh """
-                            export JAVA_HOME=${JAVA_HOME}
-                            export PATH=$JAVA_HOME/bin:$PATH
-                            ${scannerHome}/bin/sonar-scanner
-                        """
-                    }
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.sources=.'
                 }
             }
         }
@@ -55,10 +52,10 @@ pipeline {
 
     post {
         success {
-            echo 'Build and SonarQube analysis succeeded!'
+            echo 'Build, run, and SonarQube scan succeeded!'
         }
         failure {
-            echo 'Something failed in the build or analysis.'
+            echo 'Build, run, or SonarQube scan failed.'
         }
     }
 }
