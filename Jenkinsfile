@@ -13,10 +13,13 @@ pipeline {
     stages {
 
         stage('Compile') {
-            steps {
-                sh 'javac *.java'
-            }
-        }
+    steps {
+        sh '''
+        mkdir -p bin
+        javac -d bin *.java
+        '''
+    }
+}
 
         stage('Run with simulated input') {
             steps {
