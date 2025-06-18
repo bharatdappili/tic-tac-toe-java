@@ -12,11 +12,7 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git url: 'https://github.com/bharatdappili/tic-tac-toe-java.git', branch: 'main'
-            }
-        }
+
 
         stage('Compile') {
             steps {
@@ -38,7 +34,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('MySonarServer') {
                     // Run SonarScanner CLI instead of Maven
-                    sh "sonar-scanner -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} -Dsonar.sources=."
+                    sh "${tool 'SonarScanner'}/bin/sonar-scanner -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} -Dsonar.sources=."
                 }
             }
         }
