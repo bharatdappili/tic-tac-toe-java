@@ -21,10 +21,10 @@ pipeline {
                     export PATH=$JAVA_HOME/bin:$PATH
 
                     echo "Compiling Java code..."
-                    javac tictactoe.java
+                    javac TicTacToe.java
 
                     echo "Running Java program..."
-                    java tictactoe
+                    java TicTacToe
                 '''
             }
         }
