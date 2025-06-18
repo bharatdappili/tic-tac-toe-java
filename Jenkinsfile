@@ -2,38 +2,49 @@ pipeline {
     agent any
 
     tools {
-        jdk 'jdk21'           // Your configured JDK name
-        maven 'Maven'         // Your configured Maven name
+        jdk 'jdk21'
     }
 
     environment {
-        SONAR_PROJECT_KEY = 'tic-tac-toe-java'
-        SONAR_SCANNER_OPTS = "-Xmx1024m"
+        SONAR_SCANNER_OPTS = "-Xmx512m"
     }
 
     stages {
         stage('Checkout') {
-    steps {
-        git branch: 'main', url: 'https://github.com/bharatdappili/tic-tac-toe-java.git'
-    }
-}
-
-
-        stage('Build') {
             steps {
-                sh 'mvn clean install'
+                git branch: 'main', url: 'https://github.com/bharatdappili/tic-tac-toe-java.git'
+            }
+        }
+
+        stage('Compile & Run') {
+            steps {
+                script {
+                    env.JAVA_HOME = tool name: 'jdk21', type: 'hudson.model.JDK'
+                }
+                sh '''
+                    export JAVA_HOME=${JAVA_HOME}
+                    export PATH=$JAVA_HOME/bin:$PATH
+
+                    echo "Compiling Java code..."
+                    javac tic.java
+
+                    echo "Running Java program..."
+                    java tic
+                '''
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('MySonarServer') {
-                    sh '''
-                    mvn sonar:sonar \
-                      -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-                      -Dsonar.sources=src \
-                      -Dsonar.java.binaries=target/classes
-                    '''
+                    script {
+                        def scannerHome = tool 'SonarScanner'
+                        sh """
+                            export JAVA_HOME=${JAVA_HOME}
+                            export PATH=$JAVA_HOME/bin:$PATH
+                            ${scannerHome}/bin/sonar-scanner
+                        """
+                    }
                 }
             }
         }
@@ -49,10 +60,10 @@ pipeline {
 
     post {
         success {
-            echo 'Build and SonarQube scan succeeded!'
+            echo 'Build and SonarQube analysis succeeded!'
         }
         failure {
-            echo 'Build or Quality Gate failed.'
+            echo 'Something failed in the build or analysis.'
         }
     }
 }
