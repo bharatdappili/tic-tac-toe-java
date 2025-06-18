@@ -2,12 +2,12 @@ pipeline {
     agent any
 
     tools {
-        jdk 'jdk21'        // Make sure Java 21 JDK is configured in Jenkins Global Tool Configuration with this name
-        maven 'Maven'  // Same for Maven
+        jdk 'jdk21'  // Make sure Java 21 JDK is configured in Jenkins Global Tool Configuration with this name
     }
 
     environment {
         SONAR_PROJECT_KEY = 'tic-tac-toe-java'
+        // If you need, add SONAR_HOST_URL or SONAR_LOGIN token here or in your sonar-project.properties
     }
 
     stages {
@@ -19,7 +19,7 @@ pipeline {
 
         stage('Compile') {
             steps {
-                // Compile the TicTacToe.java file
+                // Compile all Java files (adjust path if needed)
                 sh 'javac TicTacToe.java'
             }
         }
@@ -36,7 +36,8 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('MySonarServer') {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.sources=.'
+                    // Run SonarScanner CLI instead of Maven
+                    sh "sonar-scanner -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} -Dsonar.sources=."
                 }
             }
         }
