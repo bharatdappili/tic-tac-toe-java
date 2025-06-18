@@ -2,13 +2,22 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class TicTacToe {
-    private static Scanner in = new Scanner(System.in);
+    private static Scanner in;
     private static Board board = new Board();
     
     private static boolean gameEnded = false;
     private static boolean player = true;
 
     public static void main(String[] args){
+        // Use simulated input when no console (like Jenkins)
+        if(System.console() == null) {
+            // Predefined inputs (column,row pairs) separated by newlines
+            String simulatedInput = "0\n0\n1\n1\n2\n2\n";
+            in = new Scanner(simulatedInput);
+        } else {
+            in = new Scanner(System.in);
+        }
+
         System.out.println(board);
         while(!gameEnded){
             Position position = null;
@@ -19,8 +28,8 @@ public class TicTacToe {
                 board = findBestMove(board);
             }               
             player = !player;
-                System.out.println(board);
-                evaluateGame();
+            System.out.println(board);
+            evaluateGame();
         }
     }
 
@@ -31,7 +40,6 @@ public class TicTacToe {
         for(Position p : positions){
             Board child = new Board(board, p, PlayerSign.Circle);
             int current = min(child);
-            //System.out.println("Child Score: " + current);
             if(current > previous){
                 bestChild = child;
                 previous = current;
@@ -116,8 +124,8 @@ public class TicTacToe {
         while(true){
             try{
                 ret = Integer.parseInt(in.nextLine());
-            } catch (NumberFormatException e){}
-            if(ret < 0 | ret > 2)
+            } catch (Exception e){}
+            if(ret < 0 || ret > 2)
                 System.out.print("\nInvalid input. Please pick 0, 1 or 2: ");
             else break;
         }
@@ -134,10 +142,10 @@ final class Position {
         this.row = row;
     }
     public int getRow(){
-  	return this.row;
+        return this.row;
     }
     public int getColumn(){
-	return this.column;
+        return this.column;
     }
 }
 
@@ -187,32 +195,32 @@ class Board {
     }
 
     private boolean hasWon(char sign){ 
-	int x,y;
+        int x,y;
 
-	//Check diagonals
-	if(board[0][0]==sign && board[1][1] == sign && board [2][2]==sign)
-	    return true;
-	if(board[0][2]==sign && board[1][1] == sign && board [2][0]==sign)
-	    return true;
+        //Check diagonals
+        if(board[0][0]==sign && board[1][1] == sign && board [2][2]==sign)
+            return true;
+        if(board[0][2]==sign && board[1][1] == sign && board [2][0]==sign)
+            return true;
 
-	//Check row
-	for(x=0;x<3;x++){
-	    for(y=0;y<3;y++)
-		if(board[x][y] != sign)
-		    break;
-	    if(y==3)
-		return true;
-	}
+        //Check row
+        for(x=0;x<3;x++){
+            for(y=0;y<3;y++)
+                if(board[x][y] != sign)
+                    break;
+            if(y==3)
+                return true;
+        }
 
-	//Check col
-	for(x=0;x<3;x++){
-	    for(y=0;y<3;y++)
-		if(board[y][x] != sign)
-		    break;
-	    if(y==3)
-		return true;
-	}
-       	return false;
+        //Check col
+        for(x=0;x<3;x++){
+            for(y=0;y<3;y++)
+                if(board[y][x] != sign)
+                    break;
+            if(y==3)
+                return true;
+        }
+        return false;
     }
 
     public boolean isMarked(Position position){
@@ -234,5 +242,4 @@ class Board {
         }       
         return retString;
     }   
-
 }
