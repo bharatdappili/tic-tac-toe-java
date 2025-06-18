@@ -3,6 +3,7 @@ pipeline {
 
     tools {
         jdk 'jdk21'  // Make sure Java 21 JDK is configured in Jenkins Global Tool Configuration with this name
+        sonarScanner 'SonarScanner'
     }
 
     environment {
