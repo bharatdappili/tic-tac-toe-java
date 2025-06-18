@@ -1,32 +1,27 @@
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class TicTacToe {
-    private static Scanner in;
     private static Board board = new Board();
-    
     private static boolean gameEnded = false;
-    private static boolean player = true;
+    private static boolean player = true; // true = player (Cross), false = computer (Circle)
 
-    public static void main(String[] args){
-        // Use simulated input when no console (like Jenkins)
-        if(System.console() == null) {
-            // Predefined inputs (column,row pairs) separated by newlines
-            String simulatedInput = "0\n0\n1\n1\n2\n2\n";
-            in = new Scanner(simulatedInput);
-        } else {
-            in = new Scanner(System.in);
-        }
-
+    public static void main(String[] args) {
         System.out.println(board);
-        while(!gameEnded){
+        while (!gameEnded) {
             Position position = null;
-            if(player){
-                position = makeMove();
+            if (player) {
+                // Automatically pick the first available free position (simulate player move)
+                ArrayList<Position> freePositions = board.getFreePositions();
+                if (freePositions.isEmpty()) {
+                    break; // no moves left
+                }
+                position = freePositions.get(0);
                 board = new Board(board, position, PlayerSign.Cross);
-            }else{
+                System.out.println("Player moves to: (" + position.getColumn() + "," + position.getRow() + ")");
+            } else {
                 board = findBestMove(board);
-            }               
+                System.out.println("Computer moves:");
+            }
             player = !player;
             System.out.println(board);
             evaluateGame();
@@ -37,10 +32,10 @@ public class TicTacToe {
         ArrayList<Position> positions = board.getFreePositions();
         Board bestChild = null;
         int previous = Integer.MIN_VALUE;
-        for(Position p : positions){
+        for (Position p : positions) {
             Board child = new Board(board, p, PlayerSign.Circle);
             int current = min(child);
-            if(current > previous){
+            if (current > previous) {
                 bestChild = child;
                 previous = current;
             }
@@ -48,88 +43,61 @@ public class TicTacToe {
         return bestChild;
     }
 
-    public static int max(Board board){
+    public static int max(Board board) {
         GameState gameState = board.getGameState();
-        if(gameState == GameState.CircleWin)
+        if (gameState == GameState.CircleWin)
             return 1;
-        else if(gameState == GameState.CrossWin)
+        else if (gameState == GameState.CrossWin)
             return -1;
-        else if(gameState == GameState.Draw)
+        else if (gameState == GameState.Draw)
             return 0;
         ArrayList<Position> positions = board.getFreePositions();
         int best = Integer.MIN_VALUE;
-        for(Position p : positions){
+        for (Position p : positions) {
             Board b = new Board(board, p, PlayerSign.Circle);
             int move = min(b);
-            if(move > best)
+            if (move > best)
                 best = move;
-        }       
+        }
         return best;
     }
 
-    public static int min(Board board){
+    public static int min(Board board) {
         GameState gameState = board.getGameState();
-        if(gameState == GameState.CircleWin)
+        if (gameState == GameState.CircleWin)
             return 1;
-        else if(gameState == GameState.CrossWin)
+        else if (gameState == GameState.CrossWin)
             return -1;
-        else if(gameState == GameState.Draw)
+        else if (gameState == GameState.Draw)
             return 0;
         ArrayList<Position> positions = board.getFreePositions();
         int best = Integer.MAX_VALUE;
-        for(Position p : positions){
+        for (Position p : positions) {
             Board b = new Board(board, p, PlayerSign.Cross);
             int move = max(b);
-            if(move < best)
+            if (move < best)
                 best = move;
         }
         return best;
     }
 
-    private static void evaluateGame(){
+    private static void evaluateGame() {
         GameState gameState = board.getGameState();
         gameEnded = true;
-        switch(gameState){
-            case CrossWin : 
-                System.out.println("You Won!");
+        switch (gameState) {
+            case CrossWin:
+                System.out.println("Player Won!");
                 break;
-            case CircleWin : 
+            case CircleWin:
                 System.out.println("Computer Won!");
                 break;
-            case Draw : 
+            case Draw:
                 System.out.println("Draw!");
                 break;
-            default : gameEnded = false;
+            default:
+                gameEnded = false;
                 break;
         }
-    }
-
-    public static Position makeMove(){
-        Position position = null;
-        while(true){
-            System.out.print("Pick 0, 1 or 2 for column: ");
-            int column = getColOrRow();
-            System.out.print("Pick 0, 1 or 2 for row: ");
-            int row = getColOrRow();
-            position = new Position(column, row);
-            if(board.isMarked(position))
-                System.out.println("Already marked!");
-            else break;
-        }
-        return position;
-    }
-
-    private static int getColOrRow(){
-        int ret = -1;
-        while(true){
-            try{
-                ret = Integer.parseInt(in.nextLine());
-            } catch (Exception e){}
-            if(ret < 0 || ret > 2)
-                System.out.print("\nInvalid input. Please pick 0, 1 or 2: ");
-            else break;
-        }
-        return ret;
     }
 }
 
@@ -137,19 +105,21 @@ final class Position {
     private final int column;
     private final int row;
 
-    public Position(int column, int row){
+    public Position(int column, int row) {
         this.column = column;
         this.row = row;
     }
-    public int getRow(){
+
+    public int getRow() {
         return this.row;
     }
-    public int getColumn(){
+
+    public int getColumn() {
         return this.column;
     }
 }
 
-enum PlayerSign{
+enum PlayerSign {
     Cross, Circle
 }
 
@@ -158,88 +128,80 @@ enum GameState {
 }
 
 class Board {
-    private char[][] board; //e = empty, x = cross, o = circle.
+    private char[][] board; // e = empty, x = cross, o = circle.
 
-    public Board(){
+    public Board() {
         board = new char[3][3];
-        for(int y = 0; y < 3; y++)
-            for(int x = 0; x < 3; x++)
-                board[x][y] = 'e'; //Board initially empty
+        for (int y = 0; y < 3; y++)
+            for (int x = 0; x < 3; x++)
+                board[x][y] = 'e'; // Board initially empty
     }
 
-    public Board(Board from, Position position, PlayerSign sign){
+    public Board(Board from, Position position, PlayerSign sign) {
         board = new char[3][3];
-        for(int y = 0; y < 3; y++)
-            for(int x = 0; x < 3; x++)
+        for (int y = 0; y < 3; y++)
+            for (int x = 0; x < 3; x++)
                 board[x][y] = from.board[x][y];
-        board[position.getColumn()][position.getRow()] = sign==PlayerSign.Cross ? 'x':'o';
+        board[position.getColumn()][position.getRow()] = sign == PlayerSign.Cross ? 'x' : 'o';
     }
 
-    public ArrayList<Position> getFreePositions(){
-        ArrayList<Position> retArr = new ArrayList<Position>();     
-        for(int y = 0; y < 3; y++)
-            for(int x = 0; x < 3; x++)
-                if(board[x][y] == 'e')
+    public ArrayList<Position> getFreePositions() {
+        ArrayList<Position> retArr = new ArrayList<>();
+        for (int y = 0; y < 3; y++)
+            for (int x = 0; x < 3; x++)
+                if (board[x][y] == 'e')
                     retArr.add(new Position(x, y));
         return retArr;
     }
 
-    public GameState getGameState(){    
-        if(hasWon('x'))
+    public GameState getGameState() {
+        if (hasWon('x'))
             return GameState.CrossWin;
-        else if(hasWon('o'))
+        else if (hasWon('o'))
             return GameState.CircleWin;
-        else if(getFreePositions().size() == 0)
+        else if (getFreePositions().size() == 0)
             return GameState.Draw;
-        else return GameState.Incomplete;
+        else
+            return GameState.Incomplete;
     }
 
-    private boolean hasWon(char sign){ 
-        int x,y;
-
-        //Check diagonals
-        if(board[0][0]==sign && board[1][1] == sign && board [2][2]==sign)
+    private boolean hasWon(char sign) {
+        // Check diagonals
+        if (board[0][0] == sign && board[1][1] == sign && board[2][2] == sign)
             return true;
-        if(board[0][2]==sign && board[1][1] == sign && board [2][0]==sign)
+        if (board[0][2] == sign && board[1][1] == sign && board[2][0] == sign)
             return true;
 
-        //Check row
-        for(x=0;x<3;x++){
-            for(y=0;y<3;y++)
-                if(board[x][y] != sign)
-                    break;
-            if(y==3)
+        // Check rows
+        for (int y = 0; y < 3; y++) {
+            if (board[0][y] == sign && board[1][y] == sign && board[2][y] == sign)
                 return true;
         }
 
-        //Check col
-        for(x=0;x<3;x++){
-            for(y=0;y<3;y++)
-                if(board[y][x] != sign)
-                    break;
-            if(y==3)
+        // Check columns
+        for (int x = 0; x < 3; x++) {
+            if (board[x][0] == sign && board[x][1] == sign && board[x][2] == sign)
                 return true;
         }
+
         return false;
     }
 
-    public boolean isMarked(Position position){
-        if(board[position.getColumn()][position.getRow()] != 'e')
-            return true;
-        return false;
+    public boolean isMarked(Position position) {
+        return board[position.getColumn()][position.getRow()] != 'e';
     }
 
-    public String toString(){
-        String retString = "\n";
-        for(int y = 0; y < 3; y++){
-            for(int x = 0; x < 3; x++){
-                if(board[x][y] ==  'x' || board[x][y] == 'o')
-                    retString += "["+board[x][y]+"]";
+    public String toString() {
+        StringBuilder retString = new StringBuilder("\n");
+        for (int y = 0; y < 3; y++) {
+            for (int x = 0; x < 3; x++) {
+                if (board[x][y] == 'x' || board[x][y] == 'o')
+                    retString.append("[").append(board[x][y]).append("]");
                 else
-                    retString += "[ ]";
+                    retString.append("[ ]");
             }
-            retString += "\n";
-        }       
-        return retString;
-    }   
+            retString.append("\n");
+        }
+        return retString.toString();
+    }
 }
