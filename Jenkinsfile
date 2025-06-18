@@ -10,11 +10,6 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/bharatdappili/tic-tac-toe-java.git'
-            }
-        }
 
         stage('Compile & Run') {
             steps {
@@ -26,10 +21,10 @@ pipeline {
                     export PATH=$JAVA_HOME/bin:$PATH
 
                     echo "Compiling Java code..."
-                    javac tic.java
+                    javac tictactoe.java
 
                     echo "Running Java program..."
-                    java tic
+                    java tictactoe
                 '''
             }
         }
