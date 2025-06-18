@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class TicTacToe {
+public class tictactoe {
     private static Scanner in = new Scanner(System.in);
     private static Board board = new Board();
     
